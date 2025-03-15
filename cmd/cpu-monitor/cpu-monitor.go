@@ -42,7 +42,7 @@ func onReady() {
 		for {
 			select {
 			case <-mWeb.ClickedCh:
-				openBrowser("https://github.com/lustischan-ferenc/resource-monitor/")
+				openBrowser("https://github.com/lutischan-ferenc/resource-monitor")
 			case <-mQuit.ClickedCh:
 				systray.Quit()
 				return
