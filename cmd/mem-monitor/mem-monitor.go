@@ -12,8 +12,13 @@ import (
 	"time"
 
 	"github.com/Kodeworks/golang-image-ico"
-	"github.com/getlantern/systray"
+	"github.com/lutischan-ferenc/systray"
 	"github.com/shirou/gopsutil/mem"
+)
+
+var (
+	backgroundImg *image.RGBA
+	lastUsedMB    uint64
 )
 
 // main is the entry point of the application.
@@ -24,7 +29,10 @@ func main() {
 
 // onReadyMem sets up the system tray interface and starts monitoring memory usage.
 func onReadyMem() {
-	mWeb := systray.AddMenuItem("Mem Monitor V1.0", "Open the website in browser")
+	mWeb := systray.AddMenuItem("Mem Monitor v1.1", "Open the website in browser")
+	mWeb.Click(func() {
+		openBrowser("https://github.com/lutischan-ferenc/resource-monitor")
+	})
 	systray.AddSeparator()
 
 	// Create menu items to display memory statistics
@@ -35,23 +43,16 @@ func onReadyMem() {
 
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Exit", "Exit the application")
-
-	// Handle the exit button click
-	go func() {
-		for {
-			select {
-			case <-mWeb.ClickedCh:
-				openBrowser("https://github.com/lutischan-ferenc/resource-monitor")
-			case <-mQuit.ClickedCh:
-				systray.Quit()
-				return
-			}
-		}
-	}()
+	mQuit.Click(func() {
+		systray.Quit()
+	})
 
 	// Start monitoring memory usage in a separate goroutine
 	go func() {
-		for {
+		ticker := time.NewTicker(time.Second) // 1 másodperces frissítési időköz
+		defer ticker.Stop()
+
+		for range ticker.C {
 			// Fetch memory usage information
 			memInfo, err := mem.VirtualMemory()
 			if err != nil {
@@ -59,34 +60,33 @@ func onReadyMem() {
 				continue
 			}
 
-			// Calculate used memory percentage
-			usedPercent := memInfo.UsedPercent
+			// Calculate used memory in MB
+			usedMB := memInfo.Used / 1024 / 1024
 
 			// Update the system tray tooltip with memory usage percentage
-			systray.SetTooltip(fmt.Sprintf("Memory Usage: %.2f%%", usedPercent))
+			systray.SetTooltip(fmt.Sprintf("Memory Usage: %.2f%%", memInfo.UsedPercent))
 
 			// Update menu items with detailed memory statistics
-			mUsed.SetTitle(fmt.Sprintf("Used: %d MB", int(memInfo.Used/1024/1024)))
-			mFree.SetTitle(fmt.Sprintf("Free: %d MB", int(memInfo.Free/1024/1024)))
-			mCached.SetTitle(fmt.Sprintf("Cached: %d MB", int(memInfo.Cached/1024/1024)))
-			mSwap.SetTitle(fmt.Sprintf("Swap: %d MB", int(memInfo.SwapTotal/1024/1024)))
+			mUsed.SetTitle(fmt.Sprintf("Used: %d MB", usedMB))
+			mFree.SetTitle(fmt.Sprintf("Free: %d MB", memInfo.Free/1024/1024))
+			mCached.SetTitle(fmt.Sprintf("Cached: %d MB", memInfo.Cached/1024/1024))
+			mSwap.SetTitle(fmt.Sprintf("Swap: %d MB", memInfo.SwapTotal/1024/1024))
 
-			// Generate a pie chart icon based on memory usage
-			img := generateCircleDiagram(usedPercent)
+			// Generate a pie chart icon only if memory usage has changed significantly
+			if usedMB != lastUsedMB {
+				lastUsedMB = usedMB
+				img := generateCircleDiagram(memInfo.UsedPercent)
 
-			// Encode the image as an ICO file
-			var buf bytes.Buffer
-			err = ico.Encode(&buf, img)
-			if err != nil {
-				// Set a blank icon if encoding fails
-				systray.SetIcon([]byte{0x00})
-			} else {
-				// Set the generated icon in the system tray
-				systray.SetIcon(buf.Bytes())
+				// Encode the image as an ICO file
+				var buf bytes.Buffer
+				if err := ico.Encode(&buf, img); err != nil {
+					// Set a blank icon if encoding fails
+					systray.SetIcon([]byte{0x00})
+				} else {
+					// Set the generated icon in the system tray
+					systray.SetIcon(buf.Bytes())
+				}
 			}
-
-			// Wait for a second before the next update
-			time.Sleep(time.Second)
 		}
 	}()
 }
@@ -95,10 +95,17 @@ func onReadyMem() {
 // The used memory is displayed as a filled slice starting from the top (12 o'clock position).
 func generateCircleDiagram(usedPercent float64) image.Image {
 	size := 64 // Size of the icon
-	img := image.NewRGBA(image.Rect(0, 0, size, size))
 
-	// Set the background to transparent
-	draw.Draw(img, img.Bounds(), &image.Uniform{color.Transparent}, image.Point{}, draw.Src)
+	// Hozzuk létre a háttérképet, ha még nem létezik
+	if backgroundImg == nil {
+		backgroundImg = image.NewRGBA(image.Rect(0, 0, size, size))
+		// Töltsük ki a képet transzparens háttérrel
+		draw.Draw(backgroundImg, backgroundImg.Bounds(), &image.Uniform{color.Transparent}, image.Point{}, draw.Src)
+	}
+
+	// Másoljuk a háttérképet egy új képre, hogy ne módosítsuk közvetlenül
+	img := image.NewRGBA(backgroundImg.Bounds())
+	draw.Draw(img, img.Bounds(), backgroundImg, image.Point{}, draw.Src)
 
 	// Center and radius of the pie chart
 	center := image.Point{size / 2, size / 2}
