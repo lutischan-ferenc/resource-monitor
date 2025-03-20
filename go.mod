@@ -3,13 +3,12 @@ module resource-monitor
 go 1.24.1
 
 require (
-	github.com/Kodeworks/golang-image-ico v0.0.0-20141118225523-73f0f4cfade9
-	github.com/energye/systray v1.0.2
-	github.com/lutischan-ferenc/systray v0.0.0-20250319133941-136a49ed0372
+	github.com/lutischan-ferenc/systray v1.2.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 )
 
 require (
+	github.com/energye/systray v1.0.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
