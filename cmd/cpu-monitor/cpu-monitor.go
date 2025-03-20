@@ -96,12 +96,7 @@ func onReady() {
 					systray.SetIconFromMemory([]byte{0x00})
 				} else {
 					// Set the generated icon in the system tray
-					err = ioutil.WriteFile("icon.ico", buf.Bytes(), 0644)
-					if err != nil {
-						fmt.Printf("Failed to write icon to file: %v\n", err)
-					} else {
-						systray.SetIconFromMemory(buf.Bytes())
-					}
+					systray.SetIconFromMemory(buf.Bytes())
 				}
 			}
 		}
