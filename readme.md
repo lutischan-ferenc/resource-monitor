@@ -2,7 +2,27 @@
 
 This repository contains two system tray applications written in Go:
 - **CPU Monitor**: Displays CPU usage per core and updates a bar chart icon in the system tray.
+
+
+  CPU monitor systray icon with CPU usage:
+
+  ![CPU tooltip](images/cpu_icon_tooltip.png "CPU monitor systray icon with CPU usage")
+
+
+  CPU monitor systray icon with menu:
+
+ ![CPU menu](images/cpu_menu.png "CPU monitor systray icon with menu")
 - **Memory Monitor**: Displays memory usage statistics and updates a pie chart icon in the system tray.
+
+
+  Mem monitor systray icon with Mem usage:
+
+  ![Memory tooltip](images/mem_tooltip.png "Mem monitor systray icon with Mem usage")
+
+  Mem monitor systray icon with details menu:
+
+  ![Mem menu](images/mem_menu.png "Mem monitor systray icon with details menu")
+
 
 ## Prerequisites
 
