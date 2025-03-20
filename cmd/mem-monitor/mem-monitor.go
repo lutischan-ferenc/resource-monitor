@@ -6,12 +6,12 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/png"
 	"math"
 	"os/exec"
 	"runtime"
 	"time"
 
-	"github.com/Kodeworks/golang-image-ico"
 	"github.com/lutischan-ferenc/systray"
 	"github.com/shirou/gopsutil/mem"
 )
@@ -29,7 +29,7 @@ func main() {
 
 // onReadyMem sets up the system tray interface and starts monitoring memory usage.
 func onReadyMem() {
-	mWeb := systray.AddMenuItem("Mem Monitor v1.1", "Open the website in browser")
+	mWeb := systray.AddMenuItem("Mem Monitor v1.1.0", "Open the website in browser")
 	mWeb.Click(func() {
 		openBrowser("https://github.com/lutischan-ferenc/resource-monitor")
 	})
@@ -79,12 +79,12 @@ func onReadyMem() {
 
 				// Encode the image as an ICO file
 				var buf bytes.Buffer
-				if err := ico.Encode(&buf, img); err != nil {
+				if err := png.Encode(&buf, img); err != nil {
 					// Set a blank icon if encoding fails
-					systray.SetIcon([]byte{0x00})
+					systray.SetIconFromMemory([]byte{0x00})
 				} else {
 					// Set the generated icon in the system tray
-					systray.SetIcon(buf.Bytes())
+					systray.SetIconFromMemory(buf.Bytes())
 				}
 			}
 		}

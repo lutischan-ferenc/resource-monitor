@@ -6,13 +6,13 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/png"
 	"io/ioutil"
 	"math"
 	"os/exec"
 	"runtime"
 	"time"
 
-	"github.com/Kodeworks/golang-image-ico"
 	"github.com/lutischan-ferenc/systray"
 	"github.com/shirou/gopsutil/cpu"
 )
@@ -31,7 +31,7 @@ func onReady() {
 	if err != nil {
 		fmt.Println("Error fetching CPU usage:", err)
 	}
-	mWeb := systray.AddMenuItem("CPU Usage per Core v1.1", "Open the website in browser")
+	mWeb := systray.AddMenuItem("CPU Usage per Core v1.1.0", "Open the website in browser")
 	mWeb.Click(func() {
 		openBrowser("https://github.com/lutischan-ferenc/resource-monitor")
 	})
@@ -89,18 +89,18 @@ func onReady() {
 
 				// Encode the image as an ICO file
 				var buf bytes.Buffer
-				err = ico.Encode(&buf, img)
+				err = png.Encode(&buf, img)
 				if err != nil {
 					fmt.Println("Failed to encode icon, set empty icon")
 					// Set a blank icon if encoding fails
-					systray.SetIcon([]byte{0x00})
+					systray.SetIconFromMemory([]byte{0x00})
 				} else {
 					// Set the generated icon in the system tray
 					err = ioutil.WriteFile("icon.ico", buf.Bytes(), 0644)
 					if err != nil {
 						fmt.Printf("Failed to write icon to file: %v\n", err)
 					} else {
-						systray.SetIcon(buf.Bytes())
+						systray.SetIconFromMemory(buf.Bytes())
 					}
 				}
 			}
