@@ -1,3 +1,5 @@
+# Deprecated - new version at: https://github.com/lutischan-ferenc/resource-monitor-v2
+
 # CPU and Memory Monitor
 
 This repository contains two system tray applications written in Go:
